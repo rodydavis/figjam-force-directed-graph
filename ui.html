@@ -1,0 +1,136 @@
+<h2>Graph Database</h2>
+<div class="option">
+  <label for="default-iterations"> Default Iterations</label>
+  <input id="default-iterations" type="number" value="1000">
+</div>
+<div class="option">
+  <label for="repulsion-rate"> Repulsion Rate</label>
+  <input id="repulsion-rate" type="number" value="0.5" step="0.1">
+</div>
+<div class="option">
+  <label for="repulsion-percentage"> Repulsion Percentage</label>
+  <input id="repulsion-percentage" type="number" value="0.4" step="0.1" step="0.1">
+</div>
+<div class="option">
+  <label for="attraction-rate"> Attraction Rate</label>
+  <input id="attraction-rate" type="number" value="0.15" step="0.1" step="0.01">
+</div>
+<div class="option">
+  <label for="attraction-percentage"> Attraction Percentage</label>
+  <input id="attraction-percentage" type="number" value="0.15" step="0.1" step="0.01">
+</div>
+<div class="option">
+  <label for="cluster-padding"> Cluster Padding</label>
+  <input id="cluster-padding" type="number" value="15">
+</div>
+<div class="option">
+  <label for="epsilon"> Epsilon</label>
+  <input id="epsilon" type="number" value="0.0001"  step="0.0001">
+</div>
+<div class="option">
+  <label for="default-node-size"> Default Node Size</label>
+  <input id="default-node-size" type="number" value="100">
+</div>
+<div class="option">
+  <label for="json-data"> Json Data</label>
+  <input id="json-data" type="file" accept=".json">
+</div>
+<button id="create">Create</button>
+<button id="cancel">Cancel</button>
+<script>
+  const defaultIterations = document.getElementById('default-iterations');
+  const repulsionRate = document.getElementById('repulsion-rate');
+  const repulsionPercentage = document.getElementById('repulsion-percentage');
+  const attractionRate = document.getElementById('attraction-rate');
+  const attractionPercentage = document.getElementById('attraction-percentage');
+  const clusterPadding = document.getElementById('cluster-padding');
+  const epsilon = document.getElementById('epsilon');
+  const defaultNodeSize = document.getElementById('default-node-size');
+  const jsonData = document.getElementById('json-data');
+
+  document.getElementById('create').onclick = () => {
+    const data = { nodes: [], edges: [] };
+
+    const defaultGraph = {
+      nodes: [
+        { id: '1' },
+        { id: '2' },
+        { id: '3' },
+        { id: '4' },
+        { id: '5' },
+      ],
+      edges: [
+        { source: '1', destination: '2' },
+        { source: '1', destination: '3' },
+        { source: '2', destination: '4' },
+        { source: '2', destination: '5' },
+        { source: '3', destination: '4' },
+        { source: '3', destination: '5' },
+      ],
+    }
+
+    if (jsonData.files.length === 0) {
+      data.nodes = defaultGraph.nodes;
+      data.edges = defaultGraph.edges;
+      parent.postMessage({ pluginMessage: { type: 'create-graph', data } }, '*');
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const json = JSON.parse(event.target.result);
+        data.nodes = json.nodes;
+        data.edges = json.edges;
+        parent.postMessage({ pluginMessage: { type: 'create-graph', data } }, '*');
+      };
+      reader.readAsText(jsonData.files[0]);
+    }
+  }
+
+  document.getElementById('cancel').onclick = () => {
+    parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
+  }
+
+  [
+    defaultIterations,
+    repulsionRate,
+    repulsionPercentage,
+    attractionRate,
+    attractionPercentage,
+    clusterPadding,
+    epsilon,
+    defaultNodeSize,
+  ].forEach((input) => {
+    input.oninput = () => {
+      parent.postMessage({
+        pluginMessage: {
+          type: 'update-properties', data: {
+            defaultIterations: defaultIterations.value,
+            repulsionRate: repulsionRate.value,
+            repulsionPercentage: repulsionPercentage.value,
+            attractionRate: attractionRate.value,
+            attractionPercentage: attractionPercentage.value,
+            clusterPadding: clusterPadding.value,
+            epsilon: epsilon.value,
+            defaultNodeSize: defaultNodeSize.value,
+          }
+        }
+      }, '*');
+    }
+  });
+</script>
+
+<style>
+  .option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .option label {
+    width: 200px;
+    margin-right: 10px;
+  }
+
+  .option input {
+    width: 100px;
+  }
+</style>
